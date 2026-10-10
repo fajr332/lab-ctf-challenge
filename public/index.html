@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>HajzNow | احجز الآن — حجز القاعات والفعاليات</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+<header class="navbar">
+  <div class="nav-inner">
+    <a class="brand" href="/">
+      <img src="/favicon.svg" alt="HajzNow logo" />
+      <span>HajzNow · احجز الآن<small>Venue &amp; Hall Booking</small></span>
+    </a>
+    <nav class="nav-links">
+      <span class="nav-user" id="nav-user"></span>
+      <a href="/dashboard.html" id="nav-dashboard" style="display:none">حجوزاتي · My bookings</a>
+      <a href="/login.html" id="nav-login">دخول · Login</a>
+      <a href="/register.html" id="nav-register">حساب جديد · Sign up</a>
+      <button class="btn btn-white btn-sm" id="nav-logout" style="display:none">خروج · Logout</button>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+  <section class="hero">
+    <div class="card hero-card">
+      <span class="badge">قاعات أفراح · اجتماعات · شاليهات</span>
+      <h1>احجز قاعتك في دقائق<br /><span style="color:#2563eb">Book your venue in minutes</span></h1>
+      <p>منصة HajzNow لإدارة حجوزات القاعات والفعاليات — سجّل، أنشئ حجزك، واستلم تأكيد الحجز مع رمز المتابعة. تجربة بسيطة وسريعة بالعربية والإنجليزية.</p>
+      <div class="actions">
+        <a class="btn btn-primary" href="/register.html">ابدأ الآن · Get started</a>
+        <a class="btn btn-ghost" href="/login.html">تسجيل الدخول · Login</a>
+      </div>
+      <div class="stats">
+        <div class="stat"><b>+120</b> قاعة وفعالية</div>
+        <div class="stat"><b>24/7</b> تأكيد فوري</div>
+        <div class="stat"><b>AR + EN</b> دعم لغتين</div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>كيف تعمل المنصة؟<br /><span class="muted" style="font-size:14px;font-weight:500">How it works</span></h2>
+      <div class="divider"></div>
+      <div class="meta" style="flex-direction:column;align-items:stretch">
+        <div><b>1. سجّل حسابك</b> <span>— Register with name, email &amp; password</span></div>
+        <div><b>2. أنشئ حجزاً جديداً</b> <span>— Choose hall, date &amp; guests</span></div>
+        <div><b>3. استلم التأكيد</b> <span>— Get confirmation code &amp; printable details</span></div>
+        <div><b>4. تابع حجوزاتك</b> <span>— Manage all bookings from dashboard</span></div>
+      </div>
+      <div class="divider"></div>
+      <p class="muted" style="font-size:13px;margin:0">جميع الحجوزات مرتبطة بحسابك الخاص، ويمكنك عرض تفاصيل كل حجز وطباعته أو تحميله.</p>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>قاعات مميزة هذا الموسم · Featured venues</h2>
+    <p class="sub">Available for weddings, corporate meetings and private chalets — احجز حسب التاريخ والعدد</p>
+    <div class="booking-grid">
+      <div class="booking-card">
+        <span class="badge ok">متاح · Available</span>
+        <h3>قاعة الياسمين الكبرى</h3>
+        <div class="meta"><span>النوع: <b>قاعة أفراح</b></span><span>السعة: <b>حتى 500</b></span></div>
+        <p class="muted" style="font-size:13px;margin:0">مدخل VIP، تزيين ورد، فريق ضيافة كامل.</p>
+      </div>
+      <div class="booking-card">
+        <span class="badge ok">متاح · Available</span>
+        <h3>قاعة الاجتماعات التنفيذية</h3>
+        <div class="meta"><span>النوع: <b>اجتماعات</b></span><span>السعة: <b>حتى 60</b></span></div>
+        <p class="muted" style="font-size:13px;margin:0">شاشات عرض، قهوة مختصة، حجز بالساعة.</p>
+      </div>
+      <div class="booking-card">
+        <span class="badge ok">متاح · Available</span>
+        <h3>شاليه الواحة الخاص</h3>
+        <div class="meta"><span>النوع: <b>شاليه</b></span><span>السعة: <b>حتى 25</b></span></div>
+        <p class="muted" style="font-size:13px;margin:0">مسبح خاص، جلسات خارجية، مطبخ مجهز.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="toasts"></div>
+<footer>Challenge designed by Fajr</footer>
+<script src="/app.js"></script>
+</body>
+</html>

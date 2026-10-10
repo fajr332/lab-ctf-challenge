@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>HajzNow | تسجيل الدخول — Login</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+<header class="navbar">
+  <div class="nav-inner">
+    <a class="brand" href="/">
+      <img src="/favicon.svg" alt="HajzNow logo" />
+      <span>HajzNow · احجز الآن<small>Venue &amp; Hall Booking</small></span>
+    </a>
+    <nav class="nav-links">
+      <span class="nav-user" id="nav-user"></span>
+      <a href="/dashboard.html" id="nav-dashboard" style="display:none">حجوزاتي · My bookings</a>
+      <a href="/login.html" id="nav-login">دخول · Login</a>
+      <a href="/register.html" id="nav-register">حساب جديد · Sign up</a>
+      <button class="btn btn-white btn-sm" id="nav-logout" style="display:none">خروج · Logout</button>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+  <div class="center-wrap">
+    <div class="card">
+      <h1 style="font-size:22px">تسجيل الدخول · Welcome back</h1>
+      <p class="sub">Access your bookings and confirmations — ادخل لمتابعة حجوزاتك</p>
+      <div class="alert" id="msg"></div>
+      <form id="f">
+        <label>البريد الإلكتروني<span class="en">Email address</span></label>
+        <input id="email" type="email" required placeholder="you@example.com" autocomplete="email" dir="ltr" style="text-align:left" />
+        <label>كلمة المرور<span class="en">Password</span></label>
+        <input id="password" type="password" required placeholder="••••••••" autocomplete="current-password" dir="ltr" style="text-align:left" />
+        <div style="margin-top:16px">
+          <button class="btn btn-primary btn-block" id="btn" type="submit">دخول · Login</button>
+        </div>
+      </form>
+      <div class="divider"></div>
+      <p class="muted" style="font-size:14px;margin:0">ليس لديك حساب؟ <a href="/register.html">أنشئ حساباً</a> · New here? <a href="/register.html">Register</a></p>
+    </div>
+  </div>
+</main>
+
+<div id="toasts"></div>
+<footer>Challenge designed by Fajr</footer>
+<script src="/app.js"></script>
+<script>
+const f = document.getElementById("f");
+const msg = document.getElementById("msg");
+const btn = document.getElementById("btn");
+f.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  hideAlert(msg);
+  btn.disabled = true;
+  btn.textContent = "جاري الدخول…";
+  try {
+    await api("/api/login", {
+      method: "POST",
+      body: JSON.stringify({
+        email: document.getElementById("email").value,
+        password: document.getElementById("password").value,
+      }),
+    });
+    showAlert(msg, "تم تسجيل الدخول · Redirecting…", "success");
+    setTimeout(() => (window.location.href = "/dashboard.html"), 600);
+  } catch (err) {
+    showAlert(msg, err.message, "error");
+    btn.disabled = false;
+    btn.textContent = "دخول · Login";
+  }
+});
+</script>
+</body>
+</html>

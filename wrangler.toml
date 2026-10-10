@@ -1,0 +1,14 @@
+name = "hajznow-booking"
+main = "src/index.ts"
+compatibility_date = "2024-06-20"
+compatibility_flags = ["nodejs_compat"]
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "hajznow_db"
+database_id = "3a215eef-0ad1-437c-be70-6f427028b507"
+migrations_dir = "migrations"

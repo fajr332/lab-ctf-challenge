@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>HajzNow | حجوزاتي — My bookings</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+<header class="navbar">
+  <div class="nav-inner">
+    <a class="brand" href="/">
+      <img src="/favicon.svg" alt="HajzNow logo" />
+      <span>HajzNow · احجز الآن<small>Venue &amp; Hall Booking</small></span>
+    </a>
+    <nav class="nav-links">
+      <span class="nav-user" id="nav-user"></span>
+      <a href="/dashboard.html" id="nav-dashboard" style="display:none">حجوزاتي · My bookings</a>
+      <a href="/login.html" id="nav-login">دخول · Login</a>
+      <a href="/register.html" id="nav-register">حساب جديد · Sign up</a>
+      <button class="btn btn-white btn-sm" id="nav-logout" style="display:none">خروج · Logout</button>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+  <div class="card">
+    <h1 style="font-size:24px">حجوزاتي · My bookings</h1>
+    <p class="sub" id="welcome">Loading your venue reservations… جاري تحميل حجوزاتك</p>
+    <div class="alert" id="msg"></div>
+    <div id="loading"><div class="spinner"></div></div>
+    <div class="booking-grid" id="grid" style="display:none"></div>
+    <div class="empty" id="empty" style="display:none">
+      <div style="font-size:28px">📅</div>
+      <div style="font-weight:800;color:#0f172a">لا توجد حجوزات بعد · No bookings yet</div>
+      <div style="font-size:13px">أنشئ أول حجز لك من النموذج بالأسفل — Create your first booking below</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:18px">
+    <h2>حجز جديد · New booking</h2>
+    <p class="sub">Fill the form to reserve a hall, meeting room or chalet — املأ البيانات لحجز قاعة أو اجتماع أو شاليه</p>
+    <div class="alert" id="cmsg"></div>
+    <form id="cf">
+      <div class="grid2">
+        <div>
+          <label>اسم القاعة / المكان<span class="en">Venue name</span></label>
+          <input id="venue_name" required minlength="3" maxlength="120" placeholder="مثال: قاعة الياسمين الكبرى" />
+        </div>
+        <div>
+          <label>نوع المكان<span class="en">Venue type</span></label>
+          <select id="venue_type">
+            <option value="wedding_hall">قاعة أفراح · Wedding hall</option>
+            <option value="meeting_room">غرفة اجتماعات · Meeting room</option>
+            <option value="conference">قاعة مؤتمرات · Conference</option>
+            <option value="chalet">شاليه · Chalet</option>
+            <option value="outdoor">فعالية خارجية · Outdoor</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid2">
+        <div>
+          <label>تاريخ الحجز<span class="en">Booking date (YYYY-MM-DD)</span></label>
+          <input id="booking_date" type="date" required />
+        </div>
+        <div>
+          <label>الفترة<span class="en">Time slot</span></label>
+          <select id="time_slot">
+            <option value="morning">صباحاً · Morning</option>
+            <option value="afternoon">ظهراً · Afternoon</option>
+            <option value="evening" selected>مساءً · Evening</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid2">
+        <div>
+          <label>عدد الضيوف<span class="en">Guests</span></label>
+          <input id="guests" type="number" min="1" max="2000" value="100" required dir="ltr" style="text-align:left" />
+        </div>
+        <div>
+          <label>رقم الجوال<span class="en">Phone</span></label>
+          <input id="phone" required minlength="6" maxlength="30" placeholder="+9665XXXXXXXX" dir="ltr" style="text-align:left" />
+        </div>
+      </div>
+      <label>طلبات خاصة<span class="en">Special requests (optional)</span></label>
+      <textarea id="special_requests" maxlength="1000" placeholder="تزيين، مدخل VIP، تجهيزات صوتية…"></textarea>
+      <div style="margin-top:16px">
+        <button class="btn btn-primary" id="cbtn" type="submit">تأكيد الحجز · Confirm booking</button>
+      </div>
+    </form>
+  </div>
+</main>
+
+<div id="toasts"></div>
+<footer>Challenge designed by Fajr</footer>
+<script src="/app.js"></script>
+<script>
+const msg = document.getElementById("msg");
+const grid = document.getElementById("grid");
+const loading = document.getElementById("loading");
+const empty = document.getElementById("empty");
+const welcome = document.getElementById("welcome");
+
+function venueTypeLabel(t) {
+  const m = { wedding_hall: "قاعة أفراح", meeting_room: "اجتماعات", conference: "مؤتمرات", chalet: "شاليه", outdoor: "خارجي" };
+  return m[t] || t;
+}
+function slotLabel(s) {
+  const m = { morning: "صباحاً", afternoon: "ظهراً", evening: "مساءً" };
+  return m[s] || s;
+}
+
+async function load() {
+  let user = null;
+  try {
+    const me = await api("/api/me");
+    user = me.user;
+    welcome.textContent = `مرحباً ${user.name} — Here are your reservations`;
+  } catch {
+    window.location.href = "/login.html";
+    return;
+  }
+  try {
+    const data = await api("/api/bookings");
+    loading.style.display = "none";
+    const list = data.bookings || [];
+    if (list.length === 0) {
+      empty.style.display = "";
+      grid.style.display = "none";
+    } else {
+      empty.style.display = "none";
+      grid.style.display = "";
+      grid.replaceChildren();
+      for (const b of list) {
+        const card = document.createElement("div");
+        card.className = "booking-card";
+        const badge = document.createElement("span");
+        badge.className = "badge ok";
+        badge.textContent = `${b.status} · ${b.confirmation_code}`;
+        const h = document.createElement("h3");
+        h.textContent = b.venue_name;
+        const meta = document.createElement("div");
+        meta.className = "meta";
+        const d1 = document.createElement("span");
+        d1.textContent = `التاريخ: ${b.booking_date} · ${slotLabel(b.time_slot)}`;
+        const d2 = document.createElement("span");
+        d2.textContent = `النوع: ${venueTypeLabel(b.venue_type)} · ${b.guests} ضيف`;
+        meta.append(d1, d2);
+        const a = document.createElement("a");
+        a.className = "btn btn-dark btn-sm";
+        a.href = `/booking.html?id=${encodeURIComponent(b.id)}`;
+        a.textContent = `عرض التأكيد · View #${b.id}`;
+        card.append(badge, h, meta, a);
+        grid.appendChild(card);
+      }
+    }
+  } catch (err) {
+    loading.style.display = "none";
+    showAlert(msg, err.message, "error");
+  }
+}
+
+const cf = document.getElementById("cf");
+const cmsg = document.getElementById("cmsg");
+const cbtn = document.getElementById("cbtn");
+cf.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  hideAlert(cmsg);
+  cbtn.disabled = true;
+  cbtn.textContent = "جاري تأكيد الحجز…";
+  try {
+    const data = await api("/api/bookings", {
+      method: "POST",
+      body: JSON.stringify({
+        venue_name: document.getElementById("venue_name").value,
+        venue_type: document.getElementById("venue_type").value,
+        booking_date: document.getElementById("booking_date").value,
+        time_slot: document.getElementById("time_slot").value,
+        guests: Number(document.getElementById("guests").value),
+        phone: document.getElementById("phone").value,
+        special_requests: document.getElementById("special_requests").value,
+      }),
+    });
+    showAlert(cmsg, `تم تأكيد حجزك برقم #${data.booking.id} · Booking confirmed`, "success");
+    toast(`تم إنشاء الحجز #${data.booking.id}`);
+    cf.reset();
+    document.getElementById("guests").value = "100";
+    await load();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  } catch (err) {
+    showAlert(cmsg, err.message, "error");
+  } finally {
+    cbtn.disabled = false;
+    cbtn.textContent = "تأكيد الحجز · Confirm booking";
+  }
+});
+
+load();
+</script>
+</body>
+</html>

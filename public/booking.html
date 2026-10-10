@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>HajzNow | تفاصيل الحجز — Booking details</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+<header class="navbar">
+  <div class="nav-inner">
+    <a class="brand" href="/">
+      <img src="/favicon.svg" alt="HajzNow logo" />
+      <span>HajzNow · احجز الآن<small>Venue &amp; Hall Booking</small></span>
+    </a>
+    <nav class="nav-links">
+      <span class="nav-user" id="nav-user"></span>
+      <a href="/dashboard.html" id="nav-dashboard" style="display:none">حجوزاتي · My bookings</a>
+      <a href="/login.html" id="nav-login">دخول · Login</a>
+      <a href="/register.html" id="nav-register">حساب جديد · Sign up</a>
+      <button class="btn btn-white btn-sm" id="nav-logout" style="display:none">خروج · Logout</button>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+  <div class="card" id="wrap">
+    <a href="/dashboard.html" style="font-size:13px">→ العودة لحجوزاتي · Back to my bookings</a>
+    <h1 style="font-size:24px;margin-top:8px">تأكيد الحجز · Booking confirmation</h1>
+    <p class="sub" id="sub">Loading confirmation details… جاري تحميل تفاصيل الحجز</p>
+    <div class="alert" id="msg"></div>
+    <div id="loading"><div class="spinner"></div></div>
+    <div id="details" style="display:none">
+      <span class="badge ok" id="status"></span>
+      <h2 id="venue" style="margin-top:10px"></h2>
+      <dl class="kv">
+        <dt>رقم الحجز · Booking ID</dt><dd id="f-id"></dd>
+        <dt>رمز التأكيد · Confirmation</dt><dd id="f-code" dir="ltr" style="text-align:end"></dd>
+        <dt>المستضيف · Booked by</dt><dd id="f-owner"></dd>
+        <dt>التاريخ · Date</dt><dd id="f-date"></dd>
+        <dt>الفترة · Slot</dt><dd id="f-slot"></dd>
+        <dt>النوع · Type</dt><dd id="f-type"></dd>
+        <dt>الضيوف · Guests</dt><dd id="f-guests"></dd>
+        <dt>الجوال · Phone</dt><dd id="f-phone" dir="ltr" style="text-align:end"></dd>
+        <dt>أُنشئ في · Created</dt><dd id="f-created"></dd>
+      </dl>
+      <div class="divider"></div>
+      <h2 style="font-size:16px">طلبات خاصة · Special requests</h2>
+      <div class="codebox" id="f-notes" style="white-space:pre-wrap;font-family:inherit;direction:rtl;text-align:right"></div>
+      <div class="actions">
+        <button class="btn btn-dark" id="btn-print">طباعة التأكيد · Print</button>
+        <button class="btn btn-ghost" id="btn-download">تحميل التأكيد · Download</button>
+      </div>
+      <p class="hint">احتفظ برقم الحجز ورمز التأكيد لإبرازهما عند الاستقبال — Keep your booking ID &amp; confirmation code.</p>
+    </div>
+  </div>
+</main>
+
+<div id="toasts"></div>
+<footer>Challenge designed by Fajr</footer>
+<script src="/app.js"></script>
+<script>
+const params = new URLSearchParams(window.location.search);
+const bookingId = params.get("id");
+const msg = document.getElementById("msg");
+const loading = document.getElementById("loading");
+const details = document.getElementById("details");
+const sub = document.getElementById("sub");
+
+function venueTypeLabel(t) {
+  const m = { wedding_hall: "قاعة أفراح · Wedding hall", meeting_room: "غرفة اجتماعات · Meeting room", conference: "قاعة مؤتمرات · Conference", chalet: "شاليه · Chalet", outdoor: "فعالية خارجية · Outdoor" };
+  return m[t] || t;
+}
+function slotLabel(s) {
+  const m = { morning: "صباحاً · Morning", afternoon: "ظهراً · Afternoon", evening: "مساءً · Evening" };
+  return m[s] || s;
+}
+
+let current = null;
+
+async function load() {
+  if (!bookingId) {
+    loading.style.display = "none";
+    showAlert(msg, "Missing booking id / رقم الحجز مفقود", "error");
+    return;
+  }
+  try {
+    await api("/api/me");
+  } catch {
+    window.location.href = "/login.html";
+    return;
+  }
+  try {
+    const data = await api(`/api/bookings/${encodeURIComponent(bookingId)}`);
+    current = data.booking;
+    loading.style.display = "none";
+    details.style.display = "";
+    sub.textContent = `Booking #${current.id} — confirmation details below`;
+    document.getElementById("status").textContent = `${current.status} · ${current.confirmation_code}`;
+    document.getElementById("venue").textContent = current.venue_name;
+    document.getElementById("f-id").textContent = `#${current.id}`;
+    document.getElementById("f-code").textContent = current.confirmation_code;
+    document.getElementById("f-owner").textContent = current.owner_name || "—";
+    document.getElementById("f-date").textContent = current.booking_date;
+    document.getElementById("f-slot").textContent = slotLabel(current.time_slot);
+    document.getElementById("f-type").textContent = venueTypeLabel(current.venue_type);
+    document.getElementById("f-guests").textContent = String(current.guests);
+    document.getElementById("f-phone").textContent = current.phone;
+    document.getElementById("f-created").textContent = current.created_at;
+    document.getElementById("f-notes").textContent = current.special_requests || "— لا توجد طلبات خاصة —";
+    document.title = `HajzNow | حجز #${current.id} — Booking details`;
+  } catch (err) {
+    loading.style.display = "none";
+    showAlert(msg, err.message, "error");
+    sub.textContent = "Could not load booking";
+  }
+}
+
+document.getElementById("btn-print").addEventListener("click", () => window.print());
+
+document.getElementById("btn-download").addEventListener("click", () => {
+  if (!current) return;
+  const lines = [
+    "HajzNow — Booking Confirmation / تأكيد حجز",
+    "======================================",
+    `Booking ID: #${current.id}`,
+    `Confirmation: ${current.confirmation_code}`,
+    `Venue: ${current.venue_name}`,
+    `Type: ${current.venue_type}`,
+    `Date: ${current.booking_date} (${current.time_slot})`,
+    `Guests: ${current.guests}`,
+    `Phone: ${current.phone}`,
+    `Booked by: ${current.owner_name || ""}`,
+    `Status: ${current.status}`,
+    `Created: ${current.created_at}`,
+    "",
+    "Special requests / طلبات خاصة:",
+    current.special_requests || "-",
+    "",
+    "Keep this confirmation for reception. / احتفظ بهذا التأكيد للاستقبال.",
+  ];
+  const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `hajznow-booking-${current.id}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  toast("تم تحميل التأكيد · Confirmation downloaded");
+});
+
+load();
+</script>
+</body>
+</html>

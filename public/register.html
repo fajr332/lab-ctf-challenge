@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>HajzNow | إنشاء حساب جديد — Register</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+<header class="navbar">
+  <div class="nav-inner">
+    <a class="brand" href="/">
+      <img src="/favicon.svg" alt="HajzNow logo" />
+      <span>HajzNow · احجز الآن<small>Venue &amp; Hall Booking</small></span>
+    </a>
+    <nav class="nav-links">
+      <span class="nav-user" id="nav-user"></span>
+      <a href="/dashboard.html" id="nav-dashboard" style="display:none">حجوزاتي · My bookings</a>
+      <a href="/login.html" id="nav-login">دخول · Login</a>
+      <a href="/register.html" id="nav-register">حساب جديد · Sign up</a>
+      <button class="btn btn-white btn-sm" id="nav-logout" style="display:none">خروج · Logout</button>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+  <div class="center-wrap">
+    <div class="card">
+      <h1 style="font-size:22px">حساب جديد · Create account</h1>
+      <p class="sub">Join HajzNow to book halls and manage confirmations — انضم واحجز قاعتك</p>
+      <div class="alert" id="msg"></div>
+      <form id="f">
+        <label>الاسم الكامل<span class="en">Full name</span></label>
+        <input id="name" name="name" required minlength="2" maxlength="80" placeholder="مثال: محمد العتيبي" autocomplete="name" />
+        <label>البريد الإلكتروني<span class="en">Email address</span></label>
+        <input id="email" type="email" required maxlength="120" placeholder="you@example.com" autocomplete="email" dir="ltr" style="text-align:left" />
+        <label>كلمة المرور<span class="en">Password (8+ characters)</span></label>
+        <input id="password" type="password" required minlength="8" maxlength="128" placeholder="••••••••" autocomplete="new-password" dir="ltr" style="text-align:left" />
+        <p class="hint">نستخدم تشفيراً آمناً لكلمات المرور وجلسات HttpOnly.</p>
+        <div style="margin-top:16px">
+          <button class="btn btn-primary btn-block" id="btn" type="submit">إنشاء الحساب · Register</button>
+        </div>
+      </form>
+      <div class="divider"></div>
+      <p class="muted" style="font-size:14px;margin:0">لديك حساب؟ <a href="/login.html">سجّل الدخول</a> · Already have an account? <a href="/login.html">Login</a></p>
+    </div>
+  </div>
+</main>
+
+<div id="toasts"></div>
+<footer>Challenge designed by Fajr</footer>
+<script src="/app.js"></script>
+<script>
+const f = document.getElementById("f");
+const msg = document.getElementById("msg");
+const btn = document.getElementById("btn");
+f.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  hideAlert(msg);
+  btn.disabled = true;
+  btn.textContent = "جاري إنشاء الحساب…";
+  try {
+    const data = await api("/api/register", {
+      method: "POST",
+      body: JSON.stringify({
+        name: document.getElementById("name").value,
+        email: document.getElementById("email").value,
+        password: document.getElementById("password").value,
+      }),
+    });
+    showAlert(msg, "تم إنشاء الحساب بنجاح · Account created. Redirecting…", "success");
+    toast("أهلاً بك في HajzNow");
+    setTimeout(() => (window.location.href = "/dashboard.html"), 700);
+  } catch (err) {
+    showAlert(msg, err.message, "error");
+    btn.disabled = false;
+    btn.textContent = "إنشاء الحساب · Register";
+  }
+});
+</script>
+</body>
+</html>
